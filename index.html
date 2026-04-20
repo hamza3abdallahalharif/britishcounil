@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Our Project — British Council</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:wght@300;400;500&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #f0d080;
+      --gold-dark: #8a6a1e;
+      --deep: #05070f;
+      --navy: #0a0f24;
+      --cream: #f5efe0;
+      --white: #ffffff;
+      --blue-accent: #1a3a8f;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--deep);
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ─── CUSTOM CURSOR ─── */
+    #cursor {
+      width: 12px; height: 12px;
+      background: var(--gold);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      width: 40px; height: 40px;
+      border: 1.5px solid var(--gold);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: left 0.12s ease, top 0.12s ease, width 0.3s, height 0.3s, opacity 0.3s;
+      opacity: 0.5;
+    }
+
+    /* ─── CANVAS ─── */
+    #starfield {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── SECTIONS ─── */
+    section {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ─── HERO ─── */
+    #hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    .hero-bg-glow {
+      position: absolute;
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(201,168,76,0.18) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      animation: pulse-glow 4s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+      50% { opacity: 1; transform: translate(-50%, -50%) scale(1.15); }
+    }
+
+    .badge {
+      display: inline-block;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      padding: 0.5rem 1.4rem;
+      border-radius: 100px;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fade-up 1s ease forwards 0.3s;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(3.5rem, 10vw, 9rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--gold-light) 0%, var(--gold) 40%, var(--gold-dark) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      opacity: 0;
+      animation: fade-up 1.2s ease forwards 0.6s;
+      position: relative;
+    }
+
+    .hero-subtitle {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 300;
+      font-size: clamp(1rem, 2.5vw, 1.4rem);
+      color: rgba(255,255,255,0.6);
+      margin-top: 1.5rem;
+      max-width: 560px;
+      line-height: 1.7;
+      opacity: 0;
+      animation: fade-up 1.2s ease forwards 1s;
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.4rem;
+      opacity: 0;
+      animation: fade-up 1s ease forwards 2s;
+    }
+    .scroll-indicator span {
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+    .scroll-line {
+      width: 1px; height: 50px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scroll-drop 1.5s ease-in-out infinite;
+    }
+    @keyframes scroll-drop {
+      0%   { transform: scaleY(0); transform-origin: top; opacity: 1; }
+      50%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+      100% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
+    }
+
+    /* ─── EFFORT SECTION ─── */
+    #effort {
+      padding: 8rem 2rem;
+      text-align: center;
+    }
+
+    .section-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1.2rem;
+      opacity: 0;
+      transition: opacity 0.8s, transform 0.8s;
+      transform: translateY(20px);
+    }
+    .section-eyebrow.visible { opacity: 1; transform: translateY(0); }
+
+    .section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 700;
+      color: var(--white);
+      max-width: 700px;
+      margin: 0 auto 1.5rem;
+      line-height: 1.2;
+      opacity: 0;
+      transition: opacity 0.8s 0.15s, transform 0.8s 0.15s;
+      transform: translateY(20px);
+    }
+    .section-title.visible { opacity: 1; transform: translateY(0); }
+    .section-title em {
+      font-style: italic;
+      color: var(--gold);
+    }
+
+    .section-body {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: rgba(255,255,255,0.55);
+      max-width: 600px;
+      margin: 0 auto 4rem;
+      line-height: 1.8;
+      opacity: 0;
+      transition: opacity 0.8s 0.3s, transform 0.8s 0.3s;
+      transform: translateY(20px);
+    }
+    .section-body.visible { opacity: 1; transform: translateY(0); }
+
+    /* ─── STATS ─── */
+    .stats-grid {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .stat-card {
+      flex: 1;
+      min-width: 180px;
+      background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.02));
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 20px;
+      padding: 2.5rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px) scale(0.95);
+      transition: opacity 0.6s, transform 0.6s, box-shadow 0.3s;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .stat-card:hover {
+      box-shadow: 0 0 40px rgba(201,168,76,0.2);
+      transform: translateY(-5px) scale(1) !important;
+    }
+    .stat-card.visible { opacity: 1; transform: translateY(0) scale(1); }
+
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem;
+      color: var(--gold);
+      line-height: 1;
+      letter-spacing: 0.05em;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.45);
+      margin-top: 0.5rem;
+    }
+
+    /* ─── DIVIDER ─── */
+    .ornament-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+      padding: 2rem 0;
+      opacity: 0;
+      transition: opacity 0.8s;
+    }
+    .ornament-divider.visible { opacity: 1; }
+    .ornament-divider::before,
+    .ornament-divider::after {
+      content: '';
+      flex: 1;
+      max-width: 200px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold));
+    }
+    .ornament-divider::after {
+      background: linear-gradient(to left, transparent, var(--gold));
+    }
+    .ornament-diamond {
+      width: 8px; height: 8px;
+      background: var(--gold);
+      transform: rotate(45deg);
+      animation: spin-diamond 4s linear infinite;
+    }
+    @keyframes spin-diamond { to { transform: rotate(405deg); } }
+
+    /* ─── BRITISH COUNCIL LETTER ─── */
+    #letter {
+      padding: 6rem 2rem 8rem;
+    }
+
+    .letter-wrapper {
+      max-width: 780px;
+      margin: 0 auto;
+      background: linear-gradient(145deg, rgba(10,15,36,0.9), rgba(5,7,15,0.95));
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 28px;
+      padding: clamp(2.5rem, 6vw, 5rem);
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.9s, transform 0.9s;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 80px rgba(201,168,76,0.06) inset;
+    }
+    .letter-wrapper.visible { opacity: 1; transform: translateY(0); }
+
+    .letter-wrapper::before {
+      content: '';
+      position: absolute;
+      top: -1px; left: 10%; right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+
+    .corner-ornament {
+      position: absolute;
+      width: 60px; height: 60px;
+      opacity: 0.4;
+    }
+    .corner-ornament.tl { top: 20px; left: 20px; border-top: 2px solid var(--gold); border-left: 2px solid var(--gold); border-radius: 4px 0 0 0; }
+    .corner-ornament.tr { top: 20px; right: 20px; border-top: 2px solid var(--gold); border-right: 2px solid var(--gold); border-radius: 0 4px 0 0; }
+    .corner-ornament.bl { bottom: 20px; left: 20px; border-bottom: 2px solid var(--gold); border-left: 2px solid var(--gold); border-radius: 0 0 0 4px; }
+    .corner-ornament.br { bottom: 20px; right: 20px; border-bottom: 2px solid var(--gold); border-right: 2px solid var(--gold); border-radius: 0 0 4px 0; }
+
+    .bc-logo-area {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+    .bc-logo-text {
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.3rem;
+    }
+    .bc-name {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 4vw, 2.5rem);
+      font-weight: 700;
+      color: var(--white);
+    }
+    .bc-name span { color: var(--gold); }
+
+    .letter-date {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.15em;
+      margin-bottom: 2rem;
+      text-align: right;
+    }
+
+    .letter-salutation {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--gold-light);
+      margin-bottom: 1.5rem;
+      font-style: italic;
+    }
+
+    .letter-body {
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 1.5rem;
+    }
+    .letter-body strong { color: var(--white); font-weight: 500; }
+    .letter-body .highlight {
+      color: var(--gold-light);
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+    }
+
+    .letter-closing {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      color: var(--gold-light);
+      font-size: 1.1rem;
+      margin-top: 2.5rem;
+    }
+
+    /* ─── TEAM SECTION ─── */
+    #team {
+      padding: 6rem 2rem;
+      text-align: center;
+    }
+
+    .team-grid {
+      display: flex;
+      gap: 1.5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      max-width: 960px;
+      margin: 3rem auto 0;
+    }
+
+    .team-card {
+      background: linear-gradient(135deg, rgba(201,168,76,0.07) 0%, rgba(5,7,15,0.5) 100%);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 20px;
+      padding: 2rem 1.8rem;
+      min-width: 180px;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s, transform 0.6s, box-shadow 0.4s, border-color 0.4s;
+    }
+    .team-card:nth-child(1) { transition-delay: 0.05s; }
+    .team-card:nth-child(2) { transition-delay: 0.15s; }
+    .team-card:nth-child(3) { transition-delay: 0.25s; }
+    .team-card:nth-child(4) { transition-delay: 0.35s; }
+    .team-card.visible { opacity: 1; transform: translateY(0); }
+    .team-card:hover {
+      box-shadow: 0 20px 60px rgba(201,168,76,0.2);
+      border-color: rgba(201,168,76,0.6);
+    }
+    .team-card:hover .avatar-ring { transform: scale(1.08); }
+    .team-card:hover .avatar-inner { background: linear-gradient(135deg, var(--gold-dark), var(--gold)); }
+
+    .avatar-ring {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.2rem;
+      transition: transform 0.3s;
+      background: linear-gradient(135deg, rgba(201,168,76,0.15), transparent);
+    }
+    .avatar-inner {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(201,168,76,0.3), rgba(201,168,76,0.1));
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--gold-light);
+      font-weight: 700;
+      transition: background 0.4s;
+    }
+
+    .team-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 0.3rem;
+    }
+    .team-role {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+    }
+
+    /* ─── MANAGER CARD ─── */
+    .manager-card {
+      max-width: 420px;
+      margin: 3rem auto 0;
+      background: linear-gradient(135deg, rgba(201,168,76,0.13), rgba(201,168,76,0.04));
+      border: 1px solid rgba(201,168,76,0.45);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      position: relative;
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.7s 0.4s, transform 0.7s 0.4s;
+    }
+    .manager-card.visible { opacity: 1; transform: translateY(0); }
+    .manager-card::before {
+      content: 'Under the Management of';
+      position: absolute;
+      top: -0.75rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--deep);
+      padding: 0 1rem;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gold);
+      white-space: nowrap;
+    }
+    .manager-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--gold-light);
+    }
+    .manager-title {
+      font-size: 0.75rem;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-top: 0.3rem;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      text-align: center;
+      padding: 4rem 2rem;
+      border-top: 1px solid rgba(201,168,76,0.1);
+      position: relative;
+    }
+    .footer-tagline {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.5rem, 4vw, 3rem);
+      font-weight: 900;
+      font-style: italic;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+    .footer-sub {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.2em;
+    }
+
+    /* ─── PARTICLE BURST ─── */
+    .burst-particle {
+      position: fixed;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 8000;
+    }
+
+    /* ─── SHIMMER TEXT ─── */
+    .shimmer-text {
+      background: linear-gradient(90deg, var(--gold-dark), var(--gold-light), var(--gold), var(--gold-dark));
+      background-size: 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 3s linear infinite;
+    }
+    @keyframes shimmer {
+      0% { background-position: 0%; }
+      100% { background-position: 300%; }
+    }
+
+    /* ─── FLOATING ORBS ─── */
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+      animation: orb-float linear infinite;
+    }
+    @keyframes orb-float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      33% { transform: translateY(-30px) translateX(20px); }
+      66% { transform: translateY(15px) translateX(-25px); }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<canvas id="starfield"></canvas>
+
+<!-- Floating Orbs -->
+<div class="orb" style="width:400px;height:400px;background:rgba(201,168,76,0.07);top:-100px;left:-100px;animation-duration:18s;"></div>
+<div class="orb" style="width:350px;height:350px;background:rgba(26,58,143,0.08);bottom:10%;right:-80px;animation-duration:22s;"></div>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section id="hero">
+  <div class="hero-bg-glow"></div>
+  <div class="badge">✦ A Labour of Love ✦</div>
+  <h1 class="hero-title" id="hero-title">We Poured<br/>Our Hearts<br/>Into This.</h1>
+  <p class="hero-subtitle">Countless hours of dedication, creativity, and teamwork went into every single detail of this project. We hope it leaves you breathless.</p>
+  <div class="scroll-indicator">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════ EFFORT ═══════════════════ -->
+<section id="effort">
+  <p class="section-eyebrow observe">The Journey</p>
+  <h2 class="section-title observe">We didn't just build a project —<br/>we <em>lived</em> it.</h2>
+  <p class="section-body observe">Late nights, early mornings, ideas scribbled and rewritten, debates that made us better — this project is a testament to what happens when a team truly cares about the outcome.</p>
+
+  <div class="stats-grid">
+    <div class="stat-card observe" data-delay="0">
+      <div class="stat-number" data-count="100">0</div>
+      <div class="stat-label">Hours Invested</div>
+    </div>
+    <div class="stat-card observe" data-delay="100">
+      <div class="stat-number" data-count="4">0</div>
+      <div class="stat-label">Brilliant Minds</div>
+    </div>
+    <div class="stat-card observe" data-delay="200">
+      <div class="stat-number" data-count="1">0</div>
+      <div class="stat-label">Shared Vision</div>
+    </div>
+    <div class="stat-card observe" data-delay="300">
+      <div class="stat-number" data-count="0">∞</div>
+      <div class="stat-label">Passion Poured</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── DIVIDER ─── -->
+<div class="ornament-divider observe" style="max-width:600px;margin:0 auto;padding:2rem 3rem;">
+  <div class="ornament-diamond"></div>
+</div>
+
+<!-- ═══════════════════ LETTER ═══════════════════ -->
+<section id="letter">
+  <p class="section-eyebrow observe" style="text-align:center">Official Note</p>
+  <h2 class="section-title observe" style="text-align:center">A Message to the<br/><em>British Council</em></h2>
+
+  <div class="letter-wrapper observe">
+    <div class="corner-ornament tl"></div>
+    <div class="corner-ornament tr"></div>
+    <div class="corner-ornament bl"></div>
+    <div class="corner-ornament br"></div>
+
+    <div class="bc-logo-area">
+      <div class="bc-logo-text">Addressed to</div>
+      <div class="bc-name">The <span>British Council</span></div>
+    </div>
+
+    <div class="letter-date">Cairo, Egypt — 2025</div>
+
+    <div class="letter-salutation">Dear British Council,</div>
+
+    <p class="letter-body">
+      It is with immense pride and heartfelt sincerity that we present to you this project — the result of
+      <strong>extraordinary dedication, sleepless nights, and an unwavering commitment to excellence.</strong>
+    </p>
+    <p class="letter-body">
+      This was not simply an academic exercise. It was a journey of growth, collaboration, and
+      <span class="highlight">genuine passion for what we believe in.</span> We challenged ourselves at every turn,
+      pushed beyond our comfort zones, and refused to settle for anything less than our very best.
+    </p>
+    <p class="letter-body">
+      We placed <strong>our full hearts and minds</strong> into every detail — from the first brainstorming session
+      to the final touch — because we believe that the work we put out into the world should reflect who we truly are.
+      We hope that as you experience this project, you feel the effort, the care, and the passion that went into creating it.
+    </p>
+    <p class="letter-body">
+      <span class="highlight">May this work inspire, impress, and above all — amaze you.</span>
+      We are deeply honoured to share it with an institution of your distinction, and we are grateful for the
+      platform and opportunity you have provided us.
+    </p>
+    <p class="letter-body">
+      With great respect and gratitude,
+    </p>
+    <div class="letter-closing">
+      The Project Team<br/>
+      <small style="font-size:0.8rem;color:rgba(255,255,255,0.35);letter-spacing:0.15em;">Under the management of Mr. Ahmad Fawzy</small>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ TEAM ═══════════════════ -->
+<section id="team">
+  <p class="section-eyebrow observe">The People Behind It</p>
+  <h2 class="section-title observe">Meet the <em>Makers</em></h2>
+  <p class="section-body observe">Four individuals. One shared dream. An unforgettable project.</p>
+
+  <div class="team-grid">
+    <div class="team-card observe">
+      <div class="avatar-ring"><div class="avatar-inner">H</div></div>
+      <div class="team-name">Hamza Al Sharif</div>
+      <div class="team-role">Team Member</div>
+    </div>
+    <div class="team-card observe">
+      <div class="avatar-ring"><div class="avatar-inner">A</div></div>
+      <div class="team-name">Abdelwahab El Tobgy</div>
+      <div class="team-role">Team Member</div>
+    </div>
+    <div class="team-card observe">
+      <div class="avatar-ring"><div class="avatar-inner">Y</div></div>
+      <div class="team-name">Youssef Soliman</div>
+      <div class="team-role">Team Member</div>
+    </div>
+    <div class="team-card observe">
+      <div class="avatar-ring"><div class="avatar-inner">S</div></div>
+      <div class="team-name">Saleh Nassar</div>
+      <div class="team-role">Team Member</div>
+    </div>
+  </div>
+
+  <div class="manager-card observe">
+    <div class="avatar-ring" style="margin:0 auto 1.2rem;width:80px;height:80px;">
+      <div class="avatar-inner" style="width:60px;height:60px;font-size:1.5rem;">AF</div>
+    </div>
+    <div class="manager-name shimmer-text">Mr. Ahmad Fawzy</div>
+    <div class="manager-title">Project Manager & Mentor</div>
+  </div>
+</section>
+
+<!-- ─── DIVIDER ─── -->
+<div class="ornament-divider observe" style="max-width:600px;margin:0 auto;padding:2rem 3rem;">
+  <div class="ornament-diamond"></div>
+</div>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <div class="footer-tagline">We hope it amazes you.</div>
+  <div class="footer-sub">✦ British Council Project — Made with every ounce of dedication ✦</div>
+</footer>
+
+<script>
+/* ══ CURSOR ══ */
+const cur = document.getElementById('cursor');
+const ring = document.getElementById('cursor-ring');
+let mx = -100, my = -100;
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cur.style.left = mx + 'px';
+  cur.style.top = my + 'px';
+});
+setInterval(() => {
+  ring.style.left = mx + 'px';
+  ring.style.top = my + 'px';
+}, 50);
+
+/* ══ STARFIELD CANVAS ══ */
+const canvas = document.getElementById('starfield');
+const ctx = canvas.getContext('2d');
+let stars = [];
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+for (let i = 0; i < 180; i++) {
+  stars.push({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.5 + 0.2,
+    alpha: Math.random(),
+    speed: Math.random() * 0.3 + 0.05,
+    twinkle: Math.random() * Math.PI * 2,
+  });
+}
+
+function drawStars() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    s.twinkle += 0.025;
+    s.alpha = 0.3 + Math.sin(s.twinkle) * 0.5;
+    s.y -= s.speed;
+    if (s.y < 0) { s.y = canvas.height; s.x = Math.random() * canvas.width; }
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(201,168,76,${Math.max(0, s.alpha)})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+drawStars();
+
+/* ══ SCROLL OBSERVE ══ */
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const el = entry.target;
+      const delay = el.dataset.delay || 0;
+      setTimeout(() => {
+        el.classList.add('visible');
+        if (el.classList.contains('stat-card')) {
+          const numEl = el.querySelector('.stat-number');
+          const target = parseInt(numEl.dataset.count);
+          if (!isNaN(target)) animateCount(numEl, target);
+        }
+      }, parseInt(delay));
+    }
+  });
+}, { threshold: 0.15 });
+
+document.querySelectorAll('.observe').forEach(el => observer.observe(el));
+
+/* ══ COUNT UP ══ */
+function animateCount(el, target) {
+  let start = 0;
+  const suffix = el.textContent.includes('+') ? '+' : '';
+  const duration = 1600;
+  const step = target / (duration / 16);
+  const timer = setInterval(() => {
+    start += step;
+    if (start >= target) { start = target; clearInterval(timer); }
+    el.textContent = Math.floor(start) + (target >= 100 ? '+' : '');
+  }, 16);
+}
+
+/* ══ PARTICLE BURST ON CLICK ══ */
+document.addEventListener('click', e => {
+  const colors = ['#c9a84c', '#f0d080', '#8a6a1e', '#ffffff', '#1a3a8f'];
+  for (let i = 0; i < 14; i++) {
+    const p = document.createElement('div');
+    p.className = 'burst-particle';
+    p.style.cssText = `
+      left:${e.clientX}px; top:${e.clientY}px;
+      background:${colors[Math.floor(Math.random() * colors.length)]};
+      position:fixed; border-radius:50%; width:${4+Math.random()*5}px; height:${4+Math.random()*5}px;
+      pointer-events:none; z-index:8000; transform:translate(-50%,-50%);
+    `;
+    document.body.appendChild(p);
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 40 + Math.random() * 80;
+    const dx = Math.cos(angle) * dist;
+    const dy = Math.sin(angle) * dist;
+    p.animate([
+      { transform: `translate(-50%,-50%) scale(1)`, opacity: 1 },
+      { transform: `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px)) scale(0)`, opacity: 0 }
+    ], { duration: 500 + Math.random() * 300, easing: 'cubic-bezier(0,0.9,0.57,1)' })
+    .onfinish = () => p.remove();
+  }
+});
+
+/* ══ PARALLAX HERO ══ */
+document.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  const title = document.getElementById('hero-title');
+  if (title) title.style.transform = `translateY(${y * 0.25}px)`;
+});
+
+/* ══ TITLE GLITCH ON HOVER ══ */
+const heroTitle = document.getElementById('hero-title');
+if (heroTitle) {
+  heroTitle.addEventListener('mouseover', () => {
+    heroTitle.style.animation = 'none';
+    heroTitle.style.filter = 'blur(1px)';
+    setTimeout(() => { heroTitle.style.filter = ''; }, 120);
+  });
+}
+
+/* ══ CURSOR HOVER EFFECT ══ */
+document.querySelectorAll('a, button, .team-card, .stat-card, .letter-wrapper').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    cur.style.width = '20px';
+    cur.style.height = '20px';
+    ring.style.width = '60px';
+    ring.style.height = '60px';
+  });
+  el.addEventListener('mouseleave', () => {
+    cur.style.width = '12px';
+    cur.style.height = '12px';
+    ring.style.width = '40px';
+    ring.style.height = '40px';
+  });
+});
+</script>
+</body>
+</html>
